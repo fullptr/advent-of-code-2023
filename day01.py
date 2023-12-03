@@ -1,5 +1,5 @@
 with open("day01_input.txt") as f:
-    lines = f.readlines()
+    data = f.read()
     
 mapping = {
     "one": "o1e",
@@ -15,7 +15,7 @@ mapping = {
 
 total_part1 = 0
 total_part2 = 0
-for line in lines:
+for line in data.split("\n"):
     ints = [i for i in line if i.isdigit()]
     total_part1 += int(f"{ints[0]}{ints[-1]}")
     
