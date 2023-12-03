@@ -1,7 +1,6 @@
 with open("day02_input.txt") as f:
     data = f.read()
     
-    
 def part1(cubes):
     limits = {"red": 12, "green": 13, "blue": 14}
     for cube in cubes:
