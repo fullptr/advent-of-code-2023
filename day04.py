@@ -3,8 +3,7 @@ with open("day04_input.txt") as f:
     
 games = []
 for line in data:
-    _, nums = line.split(": ")
-    winning_str, ours_str = nums.split(" | ")
+    winning_str, ours_str = line.split(": ")[1].split(" | ")
     winning = {int(x) for x in winning_str.split()}
     ours = {int(x) for x in ours_str.split()}
     games.append((winning, ours))
