@@ -3,17 +3,15 @@ with open("day04_input.txt") as f:
     
 games = []
 for line in data:
-    winning_str, ours_str = line.split(": ")[1].split(" | ")
-    winning = {int(x) for x in winning_str.split()}
-    ours = {int(x) for x in ours_str.split()}
-    games.append((winning, ours))
+    winning, ours = line.split(": ")[1].split(" | ")
+    into_set = lambda s: {int(x) for x in s.split()}
+    games.append(len(into_set(winning) & into_set(ours)))
     
 part1 = 0
 part2 = [1 for _ in games]
-for idx, (winning, ours) in enumerate(games):
-    matches = ours & winning
-    part1 += 2 ** (len(matches) - 1) if matches else 0
-    for offset in range(len(matches)):
+for idx, count in enumerate(games):
+    part1 += 2 ** (count - 1) if count != 0 else 0
+    for offset in range(count):
         part2[idx + 1 + offset] += part2[idx]
     
 print(part1, sum(part2))
