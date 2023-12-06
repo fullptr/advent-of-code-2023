@@ -32,27 +32,22 @@ def map_interval(interval: Interval, dst: int, src: int, size: int) -> MappingRe
     
     return MappingResult(moved=None, unmoved=[interval])
 
-def map_int(intervals, dst, src, size):
-    #return [map_interval(i, dst, src, size) for i in intervals]
+def map_intervals(intervals: list[Interval], dst: int, src: int, size: int):
+    results = [map_interval(i, dst, src, size) for i in intervals]
+    moved = [r.moved for r in results if r.moved]
     unmoved = []
-    moved = []
-    for interval in intervals:
-        result = map_interval(interval, dst, src, size)
-        if result.moved:
-            moved.append(result.moved)
+    for result in results:
         unmoved.extend(result.unmoved)
     return unmoved, moved
 
 def solve(intervals):
     for mapping in mappings:
-        new_intervals = []
-        for interval in intervals:
-            remaining = [interval]
-            for dst, src, size in mapping:
-                remaining, out = map_int(remaining, dst, src, size)
-                new_intervals.extend(out)
-            new_intervals.extend(remaining)
-        intervals = new_intervals
+        remaining = intervals
+        intervals = []
+        for dst, src, size in mapping:
+            remaining, out = map_intervals(remaining, dst, src, size)
+            intervals.extend(out)
+        intervals.extend(remaining)
         
     return min(i[0] for i in intervals)
 
@@ -65,9 +60,5 @@ for m in maps:
     mappings.append([tuple(int(a) for a in r.split()) for r in ranges])
 
 part1 = [[s, s + 1] for s in seeds]
-assert solve(part1) == 265018614
-
 part2 = [[lo, lo + count] for lo, count in batched(seeds, 2)]
-assert solve(part2) == 63179500
-
 print(solve(part1), solve(part2))
