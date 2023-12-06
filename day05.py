@@ -32,7 +32,7 @@ def map_interval(interval: Interval, dst: int, src: int, size: int) -> MappingRe
     
     return MappingResult(moved=[], unmoved=[interval])
 
-def map_intervals(intervals: list[Interval], dst: int, src: int, size: int):
+def map_intervals(intervals: list[Interval], dst: int, src: int, size: int) -> MappingResult:
     """
     Apply the map_interval function to a list of intervals, and joins the results into one.
     """
@@ -43,7 +43,7 @@ def map_intervals(intervals: list[Interval], dst: int, src: int, size: int):
         joined_result.unmoved.extend(result.unmoved)
     return joined_result
 
-def solve(intervals):
+def solve(intervals: list[Interval]) -> int:
     for mapping in mappings:
         remaining = intervals
         intervals = []
