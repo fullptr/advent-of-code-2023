@@ -1,44 +1,45 @@
+from dataclasses import dataclass
+
 with open("day05_input.txt") as f:
     data = f.read()
     
-def map_interval(
-    interval, dst, src, size
-) -> tuple[list[tuple[int, int]], list[tuple[int, int]]]:
+Interval = tuple[int, int]
+    
+@dataclass
+class MappingResult:
+    moved: Interval | None
+    unmoved: list[Interval]
+    
+def map_interval(interval: Interval, dst: int, src: int, size: int) -> MappingResult:
+    """
+    Given an interval, map it according to the given parameters. Results contains an optional
+    moved segment of the interval (if it overlapped) plus the remaining unmoved segments, if any.
+    """
     lo, hi = interval
     
     if lo <= src and src + size < hi: # middle is mapped
-        return [[dst, dst + size]], [[lo, src], [src + size, hi]]
+        return MappingResult(moved=(dst, dst + size), unmoved=[(lo, src), (src + size, hi)])
     
     if src <= lo and hi < src + size: # whole interval is mapped
-        return [[lo - src + dst, hi - src + dst]], []
+        return MappingResult(moved=(lo - src + dst, hi - src + dst), unmoved=[])
     
     if src <+ lo < src + size:
-        return [[lo - src + dst, dst + size]], [[src + size, hi]]
+        return MappingResult(moved=(lo - src + dst, dst + size), unmoved=[(src + size, hi)])
     
     if src <+ hi < src + size:
-        return [[dst, hi - src + dst]], [[lo, src]]
+        return MappingResult(moved=(dst, hi - src + dst), unmoved=[(lo, src)])
     
-    return [], [interval]
+    return MappingResult(moved=None, unmoved=[interval])
 
 def map_int(in_intervals, out_intervals, dst, src, size):
     new = []
     while in_intervals:
         interval = in_intervals.pop()
-        moved, unmoved = map_interval(interval, dst, src, size)
-        out_intervals.extend(moved)
-        new.extend(unmoved)
-    in_intervals[::] = new
-    
-def map_value(val, mappers):
-    for dst, src, size in mappers:
-        if src <= val < src + size:
-            return val - src + dst
-    return val
-
-def apply_all_mappings(val, mappings):
-    for mapping in mappings:
-        val = map_value(val, mapping)
-    return val
+        result = map_interval(interval, dst, src, size)
+        if result.moved:
+            out_intervals.append(result.moved)
+        new.extend(result.unmoved)
+    return new
 
 seeds_str, *maps = data.split("\n\n")
 seeds = [int(x) for x in seeds_str.split()[1:]]
@@ -51,17 +52,22 @@ for m in maps:
 def apply_mapping(intervals, mapping):
     out = []
     for interval in intervals:
-        before = [interval]
+        remaining = [interval]
         after = []
         for dst, src, size in mapping:
-            map_int(before, after, dst, src, size)
+            remaining = map_int(remaining, after, dst, src, size)
+        out.extend(remaining)
         out.extend(after)
-        out.extend(before)
     return out
 
 from itertools import batched
+intervals = [[s, s + 1] for s in seeds]
+for mapping in mappings:
+    intervals = apply_mapping(intervals, mapping)
+assert min(i[0] for i in intervals) == 265018614
+
 intervals = [[lo, lo + count] for lo, count in batched(seeds, 2)]
 for mapping in mappings:
     intervals = apply_mapping(intervals, mapping)
 
-print(min(i[0] for i in intervals))
+assert min(i[0] for i in intervals) == 63179500
