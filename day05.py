@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from itertools import batched
 
 with open("day05_input.txt") as f:
     data = f.read()
@@ -31,15 +32,29 @@ def map_interval(interval: Interval, dst: int, src: int, size: int) -> MappingRe
     
     return MappingResult(moved=None, unmoved=[interval])
 
-def map_int(in_intervals, out_intervals, dst, src, size):
-    new = []
-    while in_intervals:
-        interval = in_intervals.pop()
+def map_int(intervals, dst, src, size):
+    #return [map_interval(i, dst, src, size) for i in intervals]
+    unmoved = []
+    moved = []
+    for interval in intervals:
         result = map_interval(interval, dst, src, size)
         if result.moved:
-            out_intervals.append(result.moved)
-        new.extend(result.unmoved)
-    return new
+            moved.append(result.moved)
+        unmoved.extend(result.unmoved)
+    return unmoved, moved
+
+def solve(intervals):
+    for mapping in mappings:
+        new_intervals = []
+        for interval in intervals:
+            remaining = [interval]
+            for dst, src, size in mapping:
+                remaining, out = map_int(remaining, dst, src, size)
+                new_intervals.extend(out)
+            new_intervals.extend(remaining)
+        intervals = new_intervals
+        
+    return min(i[0] for i in intervals)
 
 seeds_str, *maps = data.split("\n\n")
 seeds = [int(x) for x in seeds_str.split()[1:]]
@@ -48,26 +63,11 @@ mappings = []
 for m in maps:
     ranges = m.split("\n")[1:]
     mappings.append([tuple(int(a) for a in r.split()) for r in ranges])
-    
-def apply_mapping(intervals, mapping):
-    out = []
-    for interval in intervals:
-        remaining = [interval]
-        after = []
-        for dst, src, size in mapping:
-            remaining = map_int(remaining, after, dst, src, size)
-        out.extend(remaining)
-        out.extend(after)
-    return out
 
-from itertools import batched
-intervals = [[s, s + 1] for s in seeds]
-for mapping in mappings:
-    intervals = apply_mapping(intervals, mapping)
-assert min(i[0] for i in intervals) == 265018614
+part1 = [[s, s + 1] for s in seeds]
+assert solve(part1) == 265018614
 
-intervals = [[lo, lo + count] for lo, count in batched(seeds, 2)]
-for mapping in mappings:
-    intervals = apply_mapping(intervals, mapping)
+part2 = [[lo, lo + count] for lo, count in batched(seeds, 2)]
+assert solve(part2) == 63179500
 
-assert min(i[0] for i in intervals) == 63179500
+print(solve(part1), solve(part2))
