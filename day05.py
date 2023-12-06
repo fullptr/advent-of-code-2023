@@ -8,7 +8,7 @@ Interval = tuple[int, int]
     
 @dataclass
 class MappingResult:
-    moved: Interval | None
+    moved: list[Interval]
     unmoved: list[Interval]
     
 def map_interval(interval: Interval, dst: int, src: int, size: int) -> MappingResult:
@@ -19,34 +19,38 @@ def map_interval(interval: Interval, dst: int, src: int, size: int) -> MappingRe
     lo, hi = interval
     
     if lo <= src and src + size < hi: # middle is mapped
-        return MappingResult(moved=(dst, dst + size), unmoved=[(lo, src), (src + size, hi)])
+        return MappingResult(moved=[(dst, dst + size)], unmoved=[(lo, src), (src + size, hi)])
     
     if src <= lo and hi < src + size: # whole interval is mapped
-        return MappingResult(moved=(lo - src + dst, hi - src + dst), unmoved=[])
+        return MappingResult(moved=[(lo - src + dst, hi - src + dst)], unmoved=[])
     
     if src <= lo < src + size:
-        return MappingResult(moved=(lo - src + dst, dst + size), unmoved=[(src + size, hi)])
+        return MappingResult(moved=[(lo - src + dst, dst + size)], unmoved=[(src + size, hi)])
     
     if src <= hi < src + size:
-        return MappingResult(moved=(dst, hi - src + dst), unmoved=[(lo, src)])
+        return MappingResult(moved=[(dst, hi - src + dst)], unmoved=[(lo, src)])
     
-    return MappingResult(moved=None, unmoved=[interval])
+    return MappingResult(moved=[], unmoved=[interval])
 
 def map_intervals(intervals: list[Interval], dst: int, src: int, size: int):
-    results = [map_interval(i, dst, src, size) for i in intervals]
-    moved = [r.moved for r in results if r.moved]
-    unmoved = []
-    for result in results:
-        unmoved.extend(result.unmoved)
-    return unmoved, moved
+    """
+    Apply the map_interval function to a list of intervals, and joins the results into one.
+    """
+    joined_result = MappingResult(moved=[], unmoved=[])
+    for interval in intervals:
+        result = map_interval(interval, dst, src, size)
+        joined_result.moved.extend(result.moved)
+        joined_result.unmoved.extend(result.unmoved)
+    return joined_result
 
 def solve(intervals):
     for mapping in mappings:
         remaining = intervals
         intervals = []
         for dst, src, size in mapping:
-            remaining, out = map_intervals(remaining, dst, src, size)
-            intervals.extend(out)
+            result = map_intervals(remaining, dst, src, size)
+            remaining = result.unmoved
+            intervals.extend(result.moved)
         intervals.extend(remaining)
         
     return min(i[0] for i in intervals)
