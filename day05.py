@@ -24,10 +24,10 @@ def map_interval(interval: Interval, dst: int, src: int, size: int) -> MappingRe
     if src <= lo and hi < src + size: # whole interval is mapped
         return MappingResult(moved=(lo - src + dst, hi - src + dst), unmoved=[])
     
-    if src <+ lo < src + size:
+    if src <= lo < src + size:
         return MappingResult(moved=(lo - src + dst, dst + size), unmoved=[(src + size, hi)])
     
-    if src <+ hi < src + size:
+    if src <= hi < src + size:
         return MappingResult(moved=(dst, hi - src + dst), unmoved=[(lo, src)])
     
     return MappingResult(moved=None, unmoved=[interval])
