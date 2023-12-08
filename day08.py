@@ -1,3 +1,6 @@
+from itertools import cycle
+from math import lcm
+    
 with open("day08_input.txt") as f:
     directions, edges = f.read().split("\n\n")
     
@@ -5,9 +8,6 @@ graph = {}
 for line in edges.split("\n"):
     src, dsts = line.split(" = ")
     graph[src] = dsts[1:-1].split(", ")
-    
-from itertools import cycle
-from math import lcm
 
 def get_cycle(start, is_sentinel):
     curr = start
