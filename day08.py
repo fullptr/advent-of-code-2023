@@ -16,10 +16,7 @@ def get_cycle(start, is_sentinel):
         if is_sentinel(curr):
             return count
         
-        if d == "L":
-            curr = graph[curr][0]
-        else:
-            curr = graph[curr][1]
+        curr = graph[curr][d == "R"]
         count += 1
       
 part1_sentinel = lambda n: n == "ZZZ"  
